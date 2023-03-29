@@ -1,0 +1,44 @@
+pragma solidity ^0.8.0;
+
+contract Aadhaar {
+    address public owner;
+    mapping (address => bytes32) public aadhaarHash;
+    mapping (address => bool) public admins;
+
+    constructor() {
+        owner = msg.sender;
+        admins[msg.sender] = true;
+    }
+
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Only the contract owner can call this function");
+        _;
+    }
+
+    modifier onlyAdmin() {
+        require(admins[msg.sender], "Only admins can call this function");
+        _;
+    }
+
+    function linkAadhaar(bytes32 hash) public {
+        require(aadhaarHash[msg.sender] == 0x0, "Aadhaar card is already linked to this address");
+        aadhaarHash[msg.sender] = hash;
+    }
+
+    function unlinkAadhaar() public {
+        require(aadhaarHash[msg.sender] != 0x0, "No Aadhaar card is linked to this address");
+        delete aadhaarHash[msg.sender];
+    }
+
+    function getAadhaarHash(address addr) public view onlyAdmin returns (bytes32) {
+        return aadhaarHash[addr];
+    }
+
+    function addAdmin(address addr) public onlyOwner {
+        admins[addr] = true;
+    }
+
+    function removeAdmin(address addr) public onlyOwner {
+        admins[addr] = false;
+    }
+}
